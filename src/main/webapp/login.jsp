@@ -5,9 +5,15 @@
     <meta charset="UTF-8">
     <title>로그인</title>
     <style>
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+    font-weight: 900;
+    font-display: swap;
+}
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            font-family: 'Paperozi';
+            background: white;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,8 +23,7 @@
         .login-container {
             background-color: white;
             padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+			border:solid 4px;
             width: 350px;
         }
         .login-container h2 {
@@ -38,21 +43,19 @@
         .input-group input {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border:solid;
             outline: none;
             transition: 0.3s;
         }
         .input-group input:focus {
-            border-color: #4facfe;
+            border-color: gray;
             box-shadow: 0 0 8px rgba(79, 172, 254, 0.3);
         }
         .login-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            background: linear-gradient(135deg, black,gray);
             border: none;
-            border-radius: 8px;
             color: white;
             font-size: 16px;
             font-weight: bold;
@@ -60,7 +63,7 @@
             transition: background 0.3s;
         }
         .login-btn:hover {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            background: linear-gradient(135deg, gray,black);
         }
         .links {
             margin-top: 15px;
@@ -68,7 +71,7 @@
         }
         .links a {
             text-decoration: none;
-            color: #4facfe;
+            color: black;
             margin: 0 5px;
             font-size: 14px;
         }
