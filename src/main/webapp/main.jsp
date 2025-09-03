@@ -85,7 +85,19 @@
                 <div class="mb-6">
                     <h2 class="text-xl font-medium mb-4">Popular</h2>
                     <div id="restaurant-grid" class="grid grid-cols-2 gap-4">
-                        <!-- Restaurant cards will be inserted here -->
+                        <div class="border-4 border-black bg-white">
+                    <div class="p-4">
+                        <div class="aspect-video border-2 border-black mb-4 overflow-hidden">
+                        	<p class="text-base font-normal mb-4">${store.name}</p>
+							<p class="text-base font-normal mb-4">${store.address}</p>
+                        	<p class="text-base font-normal mb-4">${store.rating}</p>
+                        </div>
+                        <button class="px-4 py-2 border-2 border-black bg-white hover:bg-gray-100 transition-colors"
+                                onclick="location.href='<%=ctx%>/review.do'">
+                            리뷰보기
+                        </button>
+                    </div>
+                </div>
                     </div>
                 </div>
 
@@ -114,21 +126,7 @@
     </div>
 
     <script>
-        // ----- Mock restaurant data -----
-        const mockRestaurants = [
-            { id: 1, name: "서울 한정식", address: "서울시 강북구 13-1",
-              image: "https://images.unsplash.com/photo-1670819917394-03031b377bea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-              category: "한식" },
-            { id: 2, name: "도쿄 스시", address: "서울시 강북구 13-1",
-              image: "https://images.unsplash.com/photo-1628652336186-77d85188dab0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-              category: "일식" },
-            { id: 3, name: "베이징 덕", address: "서울시 강북구 13-1",
-              image: "https://images.unsplash.com/photo-1670518045382-b68878eebecc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-              category: "중식" },
-            { id: 4, name: "이탈리안 파스타", address: "서울시 강북구 13-1",
-              image: "https://images.unsplash.com/photo-1707528904014-658b4c068ec5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-              category: "양식" }
-        ];
+
 
         // ----- State -----
         let selectedCategory = '';
@@ -141,32 +139,6 @@
             const sidebar = document.getElementById('sidebar');
             isSidebarOpen = !isSidebarOpen;
             sidebar.classList.toggle('hidden', !isSidebarOpen);
-        }
-
-        // ----- Filter & Render -----
-        function getFilteredRestaurants() {
-            return selectedCategory
-                ? mockRestaurants.filter(r => r.category === selectedCategory)
-                : mockRestaurants;
-        }
-
-        function renderRestaurantGrid() {
-            const grid = document.getElementById('restaurant-grid');
-            const restaurants = getFilteredRestaurants();
-            grid.innerHTML = restaurants.map(r => `
-                <div class="border-4 border-black bg-white">
-                    <div class="p-4">
-                        <div class="aspect-video border-2 border-black mb-4 overflow-hidden">
-                            <img src="${r.image}" alt="${r.name}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                        </div>
-                        <p class="text-base font-normal mb-4">${r.address}</p>
-                        <button class="px-4 py-2 border-2 border-black bg-white hover:bg-gray-100 transition-colors"
-                                onclick="alert('리뷰보기는 추후 detail.do?id=${r.id}로 연결하세요')">
-                            리뷰보기
-                        </button>
-                    </div>
-                </div>
-            `).join('');
         }
 
         function updateCategoryButtons() {
@@ -206,7 +178,6 @@
 
         // ----- Init -----
         function init() {
-            renderRestaurantGrid();
             renderPagination();
             updateCategoryButtons();
         }
