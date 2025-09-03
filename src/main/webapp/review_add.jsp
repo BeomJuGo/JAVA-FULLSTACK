@@ -57,7 +57,8 @@
 
     .form-container input[type="text"],
     .form-container input[type="button"],
-    .form-container textarea {
+    .form-container textarea,
+    p {
       width: 100%;
       box-sizing: border-box;
       padding: 8px;
@@ -128,13 +129,26 @@
 <body>
   <div class="form-container">
     <h2>리뷰 입력 폼</h2>
-    <form name="reviewInput" action="review.do" method="post">
-      
+    <form name="reviewInput" action="<%=request.getContextPath()%>/Review" method="post" enctype="multipart/form-data">
+      <%
+      	String storeName = request.getParameter("storeName");
+      	String address = request.getParameter("address");
+      	// 불러온 내용이 없을 경우 임의로 지정된 내용이 들어감
+      	if (storeName == null || storeName.trim().length() == 0) {
+      		storeName = "테스트 식당";
+      	}
+      	if (address == null || address.trim().length() == 0) {
+      		address = "서울시 테스트구 123";
+      	}
+
+      %>
       <label>식당명</label>
-      <input type="text" name="restaurantName" placeholder="정확한 명칭을 입력해주세요" maxlength="15" required>
+      <p><%= storeName%></p>
+      <input type="hidden" name="storeName" value="<%= storeName %>">
 
       <label>주소</label>
-      <input type="text" name="address" placeholder="주소를 입력해주세요" required>
+      <p><%= address%></p>
+      <input type="hidden" name="address" value="<%= address %>">
 
       <label>평점</label>
       <div class="star-rating">
@@ -142,16 +156,17 @@
         <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
         <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
         <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-        <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+        <input type="radio" id="star1" name="rating" value="1" required><label for="star1">★</label>
       </div>
 
       <hr>
 
       <label>사진 <span>(선택사항)</span></label>
-      <input type="text" name="photoUrl" placeholder="사진 URL 입력">
-
-      <label>추천 <span>(선택사항)</span></label>
-      <input type="text" name="menu" placeholder="예: 초코머핀(3,200원)">
+      <table>
+      	<tr>
+		 <td colspan=2 align=center><input type="file" name="pic"></td>
+		</tr>
+      </table>
 
       <label>리뷰 내용 <span>(선택사항)</span></label>
       <textarea name="review" rows="5" required></textarea>
