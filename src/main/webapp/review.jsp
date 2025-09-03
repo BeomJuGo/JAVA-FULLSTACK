@@ -19,10 +19,12 @@ if (request.getAttribute("totalPages") == null)
 <title>가게 리뷰 관리</title>
 <style>
 @font-face {
-    font-family: 'Paperozi';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
-    font-weight: 900;
-    font-display: swap;
+	font-family: 'Paperozi';
+	src:
+		url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2')
+		format('woff2');
+	font-weight: 900;
+	font-display: swap;
 }
 /* (사용자 CSS 그대로 유지) */
 * {
@@ -199,6 +201,26 @@ body {
 .review-write-button:hover {
 	background: #f9fafb
 }
+
+.review-right {
+	display: flex;
+	align-items: center;
+	gap: .5rem
+}
+
+.btn-link {
+	border: 1px solid #000;
+	padding: .2rem .6rem;
+	background: #fff;
+	cursor: pointer;
+	font-size: 12px;
+	text-decoration: none;
+	color: #000
+}
+
+.btn-link:hover {
+	background: #f9fafb
+}
 </style>
 </head>
 <body>
@@ -207,18 +229,6 @@ body {
 			<div class="main-container">
 				<!-- 상단 섹션 -->
 				<div class="top-section">
-					<!-- IMG 영역 -->
-					<div class="img-area">
-						<c:choose>
-							<c:when test="${not empty store.img}">
-								<img src="${store.img}" alt="${store.name}" />
-							</c:when>
-							<c:otherwise>
-								<span>이미지 없음</span>
-							</c:otherwise>
-						</c:choose>
-					</div>
-
 					<!-- 폼/정보 영역 -->
 					<div class="form-area">
 						<div class="form-fields">
@@ -245,9 +255,8 @@ body {
 
 					<!-- 우측 버튼 -->
 					<div class="right-buttons">
-						<button class="button"
-							 onclick="location.href='<%=ctx%>/main.jsp'">메인으로</button> <button
-							class="button" onclick="location.href='<%=ctx%>/map.jsp'">지도보기</button>
+						<button class="button" onclick="location.href='<%=ctx%>/main.jsp'">메인으로</button>
+						<button class="button" onclick="location.href='<%=ctx%>/map.jsp'">지도보기</button>
 					</div>
 				</div>
 
@@ -262,8 +271,26 @@ body {
 											<span><strong>평점</strong> <c:out value="${r.rating}" /></span>
 											<span><c:out value="${r.review}" /></span>
 										</div>
-										<span><c:out value="${r.userId}" /></span>
+										<div class="review-right">
+											<!-- 작성자 표시 -->
+											<span><c:out value="${r.userId}" /></span>
+
+											<!-- 로그인 유저가 본인 글이거나, ADMIN 권한이면 수정 버튼 노출 -->
+											<c:if
+												test="${not empty sessionScope.loginUser 
+               and (r.userId eq sessionScope.loginUser.id 
+                 or sessionScope.loginUser.role eq 'ADMIN')}">
+												<a class="btn-link"
+													href="${pageContext.request.contextPath}/review_update.jsp
+             ?reviewId=${r.id}
+             &storeId=${store.id}
+             &page=${curPage}">
+													리뷰수정 </a>
+											</c:if>
+										</div>
+
 									</div>
+
 								</c:forEach>
 							</c:when>
 							<c:otherwise>
@@ -313,8 +340,7 @@ body {
 					</div>
 
 					<button class="review-write-button"
-						onclick="location.href='<%=ctx%>/review_add.jsp'">
-						리뷰 쓰기 </button>
+						onclick="location.href='<%=ctx%>/review_add.jsp'">리뷰 쓰기</button>
 				</div>
 
 			</div>
