@@ -162,11 +162,6 @@ h2 {
 				placeholder="이름" required>
 		</div>
 
-		<div class="group">
-			<label for="email">이메일</label> <input type="email" id="email"
-				name="email" placeholder="example@mail.com" required>
-		</div>
-
 		<div class="row">
 			<div class="group">
 				<label for="pwd">비밀번호</label> <input type="password" id="pwd"
@@ -178,10 +173,6 @@ h2 {
 			</div>
 		</div>
 
-		<div class="group">
-			<label for="phone">휴대폰 (선택)</label> <input type="text" id="phone"
-				name="phone" placeholder="010-0000-0000">
-		</div>
 
 		<div id="msg" class="msg"></div>
 
