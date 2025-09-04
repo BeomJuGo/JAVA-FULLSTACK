@@ -1,7 +1,9 @@
 package Util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.naming.Context;
@@ -13,17 +15,15 @@ public class DBManager {
 		Connection conn = null;
 
 		try {
-			// DBCP 접속 방법
-			Context ct = new InitialContext();
-			Context env = (Context) ct.lookup("java:/comp/env");
-			DataSource ds = (DataSource) env.lookup("jdbc/FileUp");
-			conn = ds.getConnection();
-
-			/*
-			 * Connection conn = null; Context ct = new InitialContext(); DataSource ds =
-			 * (DataSource)ct.lookup("java:/comp/env/jdbc/join"); conn = ds.getConnection();
-			 */
-
+			// DBCP 방식 대신 일반 JDBC 직접 연결 방식으로 변경
+			String driver = "oracle.jdbc.OracleDriver";
+			String url = "jdbc:oracle:thin:@127.0.0.1:1521:xe";
+			String id = "scott";
+			String pw = "tiger";
+			
+			Class.forName(driver);
+			conn = DriverManager.getConnection(url, id, pw);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -43,7 +43,6 @@ public class DBManager {
 	}
 
 	// select 모듈
-
 	public static void close(Connection conn, Statement stmt, ResultSet rs) {
 		try {
 			if (rs != null)
@@ -56,5 +55,4 @@ public class DBManager {
 			e.printStackTrace();
 		}
 	}
-
 }
