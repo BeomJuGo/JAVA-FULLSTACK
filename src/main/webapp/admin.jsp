@@ -1,112 +1,97 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" %>
+<%@ page import="java.util.List, com.store.StoreDTO" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>관리자 페이지</title>
-<style>
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;font-size:14px}
-  .wrap{max-width:1100px;margin:24px auto;padding:8px}
-  h2{margin:24px 0 8px}
-  table{width:100%;border-collapse:collapse}
-  th,td{border:1px solid #333;padding:8px}
-  th{background:#f2f2f2;text-align:left}
-  .toolbar{display:flex;gap:8px;justify-content:flex-end;margin:8px 0 16px}
-  .btn{border:1px solid #333;background:#fff;padding:4px 10px;cursor:pointer;text-decoration:none;color:#000}
-  .btn:hover{background:#f6f6f6}
-  .empty{padding:16px;color:#555}
-</style>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<div class="wrap">
-  <h1>관리자 페이지</h1>
-
-  <!-- ========== 가게정보 섹션 ========== -->
-  <section>
-    <h2>가게정보</h2>
-    <div class="toolbar">
-      <a class="btn" href="${pageContext.request.contextPath}/storeCreate.jsp">가게 등록</a>
-      <a class="btn" href="${pageContext.request.contextPath}/main.jsp">메인으로</a>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <h1 class="text-2xl font-bold mb-4">관리자 페이지</h1>
+        <!-- 평균 평점 표시 -->
+        <div class="mb-6">
+            <strong>현재 전체 평균 평점: </strong>
+            <span><%= (request.getAttribute("avgRating") != null) ? String.format("%.1f", (double)request.getAttribute("avgRating")) : "0.0" %></span>
+        </div>
+        <!-- 새 상점 추가 폼 -->
+        <div class="mb-8 p-4 border border-gray-300 rounded bg-white">
+            <h2 class="text-xl font-semibold mb-2">새 가게 등록</h2>
+            <form action="<%= request.getContextPath() %>/admin.do" method="post" class="space-y-4">
+                <input type="hidden" name="action" value="insert">
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="name">가게 이름</label>
+                    <input class="w-full border px-3 py-2" type="text" id="name" name="name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="adress">주소</label>
+                    <input class="w-full border px-3 py-2" type="text" id="adress" name="adress" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="rating">평점 (예: 4.5)</label>
+                    <input class="w-full border px-3 py-2" type="number" id="rating" name="rating" step="0.1" min="0" max="5" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="category">카테고리</label>
+                    <select class="w-full border px-3 py-2" id="category" name="category" required>
+                        <option value="일식">일식</option>
+                        <option value="중식">중식</option>
+                        <option value="양식">양식</option>
+                        <option value="한식">한식</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">등록</button>
+                </div>
+            </form>
+        </div>
+        <!-- 상점 목록 표시 -->
+        <div class="p-4 border border-gray-300 rounded bg-white">
+            <h2 class="text-xl font-semibold mb-2">등록된 가게 목록</h2>
+            <table class="min-w-full border text-left text-sm">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-3 py-2 border">이름</th>
+                        <th class="px-3 py-2 border">주소</th>
+                        <th class="px-3 py-2 border">평점</th>
+                        <th class="px-3 py-2 border">카테고리</th>
+                        <th class="px-3 py-2 border">삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                        List<StoreDTO> storeList = (List<StoreDTO>) request.getAttribute("storeList");
+                        if (storeList != null && !storeList.isEmpty()) {
+                            for (StoreDTO store : storeList) {
+                    %>
+                    <tr>
+                        <td class="px-3 py-2 border"><%= store.getName() %></td>
+                        <td class="px-3 py-2 border"><%= store.getAdress() %></td>
+                        <td class="px-3 py-2 border"><%= String.format("%.1f", store.getRating()) %></td>
+                        <td class="px-3 py-2 border"><%= store.getCategory() %></td>
+                        <td class="px-3 py-2 border">
+                            <form action="<%= request.getContextPath() %>/admin.do" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="name" value="<%= store.getName() %>">
+                                <button type="submit" class="text-red-600 hover:underline">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <%
+                            }
+                        } else {
+                    %>
+                    <tr>
+                        <td colspan="5" class="px-3 py-4 text-center">등록된 가게가 없습니다.</td>
+                    </tr>
+                    <%
+                        }
+                    %>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <c:choose>
-      <c:when test="${not empty stores}">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>가게명</th>
-              <th>주소</th>
-              <th>연락처</th>
-              <th>평균 평점</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            <c:forEach var="s" items="${stores}">
-              <tr>
-                <td><c:out value="${s.id}"/></td>
-                <td><c:out value="${s.name}"/></td>
-                <td><c:out value="${s.address}"/></td>
-                <td><c:out value="${s.phone}"/></td>
-                <td><c:out value="${s.avg}"/></td>
-                <td>
-                  <a class="btn" href="${pageContext.request.contextPath}/storeupdate.jsp?storeId=${s.id}">수정</a>
-                  <!-- 필요 시 삭제 버튼/링크 추가 -->
-                </td>
-              </tr>
-            </c:forEach>
-          </tbody>
-        </table>
-      </c:when>
-      <c:otherwise>
-        <div class="empty">등록된 가게가 없습니다.</div>
-      </c:otherwise>
-    </c:choose>
-  </section>
-
-  <!-- ========== 유저정보 섹션 ========== -->
-  <section>
-    <h2 style="margin-top:32px;">유저정보</h2>
-    <div class="toolbar">
-      <a class="btn" href="${pageContext.request.contextPath}/userCreate.jsp">유저 등록</a>
-    </div>
-
-    <c:choose>
-      <c:when test="${not empty users}">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>아이디(닉네임)</th>
-              <th>이메일</th>
-              <th>권한</th>
-              <th>상태</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            <c:forEach var="u" items="${users}">
-              <tr>
-                <td><c:out value="${u.id}"/></td>
-                <td><c:out value="${u.username}"/></td>
-                <td><c:out value="${u.email}"/></td>
-                <td><c:out value="${u.role}"/></td>
-                <td><c:out value="${u.status}"/></td>
-                <td>
-                  <a class="btn" href="${pageContext.request.contextPath}/userupdate.jsp?userId=${u.id}">수정</a>
-                </td>
-              </tr>
-            </c:forEach>
-          </tbody>
-        </table>
-      </c:when>
-      <c:otherwise>
-        <div class="empty">등록된 유저가 없습니다.</div>
-      </c:otherwise>
-    </c:choose>
-  </section>
-</div>
 </body>
 </html>
