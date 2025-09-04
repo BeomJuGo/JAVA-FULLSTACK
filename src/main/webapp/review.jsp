@@ -281,7 +281,7 @@ body {
                and (r.userId eq sessionScope.loginUser.id 
                  or sessionScope.loginUser.role eq 'ADMIN')}">
 												<a class="btn-link"
-													href="${pageContext.request.contextPath}/review_update.jsp
+													href="${pageContext.request.contextPath}/reviewUpdate.jsp
              ?reviewId=${r.id}
              &storeId=${store.id}
              &page=${curPage}">
@@ -340,7 +340,9 @@ body {
 					</div>
 
 					<button class="review-write-button"
-						onclick="location.href='<%=ctx%>/review_add.jsp'">리뷰 쓰기</button>
+    					onclick="location.href='<%=ctx%>/review_add.jsp?adress=${store.adress}&storeName=${store.name}'">
+    					리뷰 쓰기
+					</button>
 				</div>
 
 			</div>
