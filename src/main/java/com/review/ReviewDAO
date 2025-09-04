@@ -1,0 +1,70 @@
+package com.review;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import Util.DBManager;
+
+public class ReviewDAO {
+	//싱글톤
+	private static final ReviewDAO instance = new ReviewDAO();
+	public static ReviewDAO getInstance() { return instance; }
+
+	private ReviewDAO() {
+		
+	}
+	//리뷰 추가 
+	public void insert(ReviewDTO dto) {
+		String sql = "insert into review (user_id, store_name, content, rating, review_img) values (?,?,?,?,?)";
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			conn = DBManager.conn();
+			ps = conn.prepareStatement(sql);
+			
+			ps.setString(1, dto.getUserId());
+			ps.setString(2, dto.getStoreName());
+			ps.setString(3, dto.getReview());
+			ps.setDouble(4, dto.getRating());
+			ps.setString(5, dto.getReviewImg());
+			ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBManager.close(conn, ps);
+		}
+	}
+	//(store_name) 넣고 (user_id, store_name, content, ration, review_img) dto  d로 가져오기
+	public List<ReviewDTO> findByStore(String storeName) {
+		String sql = "select user_id, store_name, content, rating, review_img from review where store_name=? order by review_id desc";
+		List<ReviewDTO> list = new ArrayList<>();
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = DBManager.conn();
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, storeName);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				ReviewDTO d = new ReviewDTO();
+				d.setUserId(rs.getString("user_id"));
+				d.setStoreName(rs.getString("store_name"));
+				d.setReview(rs.getString("content"));
+				d.setRating(rs.getDouble("rating"));
+				d.setReviewImg(rs.getString("review_img"));
+				list.add(d);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBManager.close(conn, ps, rs);
+		}
+		return list;
+	}
+	
+}
+
