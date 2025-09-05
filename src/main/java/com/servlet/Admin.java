@@ -7,7 +7,10 @@ import com.store.StoreDTO;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,12 +18,29 @@ import java.util.List;
 public class AdminServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private MemberDAO memberDAO = new MemberDAO();
-    private StoreDAO storeDAO = StoreDAO.getInstance();
+    private final MemberDAO memberDAO = new MemberDAO();
+    private final StoreDAO storeDAO = StoreDAO.getInstance();
+
+    // (옵션) 관리자 권한 체크 공용 메서드
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        Object obj = session.getAttribute("loginUser");
+        if (!(obj instanceof MemberDTO)) return false;
+        MemberDTO user = (MemberDTO) obj;
+        return user.getUser_level() == 4; // 4 = 관리자
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // (옵션) 관리자만 접근
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/main.jsp");
+            return;
+        }
+
         // 회원 목록
         List<MemberDTO> users = memberDAO.findAll();
         request.setAttribute("users", users);
@@ -36,66 +56,84 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         request.setCharacterEncoding("UTF-8");
+
+        // (옵션) 관리자만 처리
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/main.jsp");
+            return;
+        }
+
         String action = request.getParameter("action");
 
-        // ---------- 회원 관련 ----------
         if ("deleteUser".equals(action)) {
+            // 회원 삭제
             String userId = request.getParameter("userId");
-            memberDAO.delete(userId);
+            if (userId != null && !userId.isBlank()) {
+                memberDAO.delete(userId);
+            }
 
         } else if ("editUser".equals(action)) {
+            // 회원 수정
             String userId = request.getParameter("userId");
             String name = request.getParameter("userName");
-            String pwd = request.getParameter("userPwd");
-            int level = Integer.parseInt(request.getParameter("userLevel"));
+            String pwd = request.getParameter("userPwd"); // 비번 비우면 DAO에서 '변경 안 함' 처리하도록 권장
+            String levelStr = request.getParameter("userLevel");
+            int level = 1;
+            try { level = Integer.parseInt(levelStr); } catch (Exception ignored) {}
+
             MemberDTO m = new MemberDTO(userId, pwd, name, level);
             memberDAO.update(m);
 
         } else if ("createUser".equals(action)) {
+            // 회원 등록
             String userId = request.getParameter("userId");
             String name = request.getParameter("userName");
             String pwd = request.getParameter("userPwd");
-            int level = Integer.parseInt(request.getParameter("userLevel"));
+            String levelStr = request.getParameter("userLevel");
+            int level = 1;
+            try { level = Integer.parseInt(levelStr); } catch (Exception ignored) {}
+
             MemberDTO m = new MemberDTO(userId, pwd, name, level);
             memberDAO.join(m);
-        }
-
-        // ---------- 가게 관련 ----------
-        else if ("createStore".equals(action)) {
-            String name = request.getParameter("storeName");
-            String adress = request.getParameter("storeAdress");
-            double rating = Double.parseDouble(request.getParameter("storeRating"));
-            String category = request.getParameter("storeCategory");
-
-            StoreDTO store = new StoreDTO();
-            store.setName(name);
-            store.setAdress(adress);
-            store.setRating(rating);
-            store.setCategory(category);
-
-            storeDAO.insertInfo(store);
 
         } else if ("deleteStore".equals(action)) {
-            String storeName = request.getParameter("storeName");
-            storeDAO.deleteInfo(storeName);
+            // 가게 삭제 (PK: name)
+            String storeId = request.getParameter("storeId");
+            if (storeId != null && !storeId.isBlank()) {
+                storeDAO.deleteInfo(storeId);
+            }
 
         } else if ("editStore".equals(action)) {
-            String name = request.getParameter("storeName");
-            String adress = request.getParameter("storeAdress");
-            double rating = Double.parseDouble(request.getParameter("storeRating"));
-            String category = request.getParameter("storeCategory");
+            // 가게 수정 (이름/주소/카테고리) — rating은 수정하지 않음
+            String originalName = request.getParameter("originalName"); // 기존 이름
+            String name = request.getParameter("name");                 // 변경할 이름
+            String address = request.getParameter("address");
+            String category = request.getParameter("category");         // "일식","중식","양식","한식"
 
-            StoreDTO store = new StoreDTO();
-            store.setName(name);
-            store.setAdress(adress);
-            store.setRating(rating);
-            store.setCategory(category);
+            StoreDTO s = new StoreDTO();
+            s.setName(name);
+            s.setAddress(address);
+            s.setCategory(category);
 
-            // update 메서드 필요 (DAO에 추가해야 함)
-            storeDAO.updateInfo(store);
-        } 
+            if (originalName != null && !originalName.isBlank()) {
+                storeDAO.updateInfo(originalName, s);
+            }
+
+        } else if ("createStore".equals(action)) {
+            // 가게 등록 (rating은 기본 0.0, category는 문자열)
+            String name = request.getParameter("name");
+            String address = request.getParameter("address");
+            String category = request.getParameter("category");         // "일식","중식","양식","한식"
+
+            StoreDTO s = new StoreDTO();
+            s.setName(name);
+            s.setAddress(address);
+            s.setCategory(category);
+            s.setRating(0.0); // 기본값
+
+            storeDAO.insertInfo(s);
+        }
 
         // 다시 목록으로 리다이렉트
         response.sendRedirect("admin.do");
