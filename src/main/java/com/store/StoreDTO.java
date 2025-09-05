@@ -2,7 +2,7 @@ package com.store;
 
 public class StoreDTO {
 private String name;
-private String adress;
+private String address;
 private double rating;
 private String category;
 public String getName() {
@@ -11,11 +11,11 @@ public String getName() {
 public void setName(String name) {
 	this.name = name;
 }
-public String getAdress() {
-	return adress;
+public String getAddress() {
+	return address;
 }
-public void setAdress(String adress) {
-	this.adress = adress;
+public void setAddress(String address) {
+	this.address = address;
 }
 public double getRating() {
 	return rating;
@@ -31,7 +31,7 @@ public void setCategory(String category) {
 }
 @Override
 public String toString() {
-	return "StoreDTO [name=" + name + ", adress=" + adress + ", review=" + ", rating=" + rating + ", category="
+	return "StoreDTO [name=" + name + ", address=" + address + ", review=" + ", rating=" + rating + ", category="
 			+ category + "]";
 }
 
