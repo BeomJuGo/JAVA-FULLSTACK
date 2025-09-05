@@ -1,4 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
 <%
     String ctx = request.getContextPath();
     com.member.MemberDTO loginUser = (com.member.MemberDTO) session.getAttribute("loginUser");
@@ -65,19 +68,41 @@
             </header>
 
             <!-- Main Content -->
-            <main class="flex-1 p-6">
-                <h2 class="text-xl font-medium mb-4">Popular</h2>
-                <div id="restaurant-grid" class="grid grid-cols-2 gap-4">
-                    <!-- 음식점 목록 동적 생성 영역 -->
-                </div>
+			<main class="flex-1 p-6">
+			    <div class="mb-6">
+			        <h2 class="text-xl font-medium mb-4">Popular</h2>
+			        <div id="restaurant-grid" class="grid grid-cols-2 gap-4">
+			
+			            <c:choose>
+			                <c:when test="${not empty storeList}">
+			                    <c:forEach var="store" items="${storeList}">
+			                        <div class="border-4 border-black bg-white">
+			                            <div class="p-4">
+			                                <div class="aspect-video border-2 border-black mb-4 overflow-hidden flex flex-col justify-center items-center text-center space-y-1">
+			                                    <p class="font-bold text-lg">${store.name}</p>
+			                                    <p>${store.address}</p>
+			                                    <p>Rating: ${store.rating}</p>
+			                                    <p>Category: ${store.category}</p>
+			                                </div>
+			
+			                                <button
+			                                    class="px-4 py-2 border-2 border-black bg-white hover:bg-gray-100 transition-colors"
+			                                    onclick="location.href='${pageContext.request.contextPath}/review.do?storeName=${fn:escapeXml(store.name)}'">
+			                                    리뷰보기
+			                                </button>
+			                            </div>
+			                        </div>
+			                    </c:forEach>
+			                </c:when>
+			                <c:otherwise>
+			                    <div class="col-span-2 text-center text-gray-500">No stores found.</div>
+			                </c:otherwise>
+			            </c:choose>
+			
+			        </div>
+			    </div>
+			</main>
 
-                <!-- Pagination -->
-                <div class="flex items-center justify-center gap-2 mt-8">
-                    <button onclick="previousPage()" id="prev-btn" class="px-4 py-2 border-2 border-black hover:bg-gray-100">이전</button>
-                    <span id="page-info" class="px-3 py-2 border-2 border-black select-none">1 / 5</span>
-                    <button onclick="nextPage()" id="next-btn" class="px-4 py-2 border-2 border-black hover:bg-gray-100">다음</button>
-                </div>
-            </main>
         </div>
     </div>
 
@@ -102,3 +127,6 @@
     </script>
 </body>
 </html>
+
+
+
