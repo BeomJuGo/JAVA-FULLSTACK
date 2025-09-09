@@ -21,11 +21,11 @@ public class StoreDAO {
     public List<StoreDTO> selectInfo() {
         List<StoreDTO> list = new ArrayList<>();
         String sql =
-            "SELECT s.name, s.address, s.category, " +
+            "SELECT s.name, s.address, s.category, s.latitude, s.longitude, " +
             "       ROUND(NVL(AVG(r.rating), 0), 1) AS rating " +
             "  FROM store s " +
             "  LEFT JOIN review r ON r.store_name = s.name " +
-            " GROUP BY s.name, s.address, s.category " +
+            " GROUP BY s.name, s.address, s.category, s.latitude, s.longitude " +
             " ORDER BY s.name";
 
         Connection conn = null;
@@ -40,6 +40,8 @@ public class StoreDAO {
                 vo.setName(rs.getString("name"));
                 vo.setAddress(rs.getString("address"));
                 vo.setCategory(rs.getString("category"));
+                vo.setLatitude(rs.getDouble("latitude"));
+                vo.setLongitude(rs.getDouble("longitude"));
                 vo.setRating(rs.getDouble("rating")); // 평균
                 list.add(vo);
             }
@@ -79,7 +81,7 @@ public class StoreDAO {
      *   화면 표시는 항상 JOIN AVG 결과를 사용.
      */
     public void insertInfo(StoreDTO store) {
-        String sql = "INSERT INTO store (name, address, rating, category) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO store (name, address, rating, category, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
         try {
@@ -89,6 +91,8 @@ public class StoreDAO {
             pstmt.setString(2, store.getAddress());
             pstmt.setDouble(3, store.getRating());   // 보통 0.0으로 전달
             pstmt.setString(4, store.getCategory()); // "일식","중식","양식","한식"
+            pstmt.setDouble(5, store.getLatitude());
+            pstmt.setDouble(6, store.getLongitude());
             pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -135,7 +139,7 @@ public class StoreDAO {
      * 상점 수정 (이름/주소/카테고리) — rating은 직접 수정하지 않음
      */
     public void updateInfo(String originalName, StoreDTO store) {
-        String sql = "UPDATE store SET name = ?, address = ?, category = ? WHERE name = ?";
+        String sql = "UPDATE store SET name = ?, address = ?, category = ?, latitude = ?, longitude = ? WHERE name = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
         try {
@@ -144,7 +148,9 @@ public class StoreDAO {
             pstmt.setString(1, store.getName());
             pstmt.setString(2, store.getAddress());
             pstmt.setString(3, store.getCategory());
-            pstmt.setString(4, originalName);
+            pstmt.setDouble(4, store.getLatitude());
+            pstmt.setDouble(5, store.getLongitude());
+            pstmt.setString(6, originalName);
             pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -162,20 +168,20 @@ public class StoreDAO {
         boolean all = (category == null || category.trim().isEmpty());
 
         String sqlAll =
-            "SELECT s.name, s.address, s.category, " +
+            "SELECT s.name, s.address, s.category, s.latitude, s.longitude, " +
             "       ROUND(NVL(AVG(r.rating), 0), 1) AS rating " +
             "  FROM store s " +
             "  LEFT JOIN review r ON r.store_name = s.name " +
-            " GROUP BY s.name, s.address, s.category " +
+            " GROUP BY s.name, s.address, s.category, s.latitude, s.longitude " +
             " ORDER BY s.name";
 
         String sqlByCat =
-            "SELECT s.name, s.address, s.category, " +
+            "SELECT s.name, s.address, s.category, s.latitude, s.longitude, " +
             "       ROUND(NVL(AVG(r.rating), 0), 1) AS rating " +
             "  FROM store s " +
             "  LEFT JOIN review r ON r.store_name = s.name " +
             " WHERE s.category = ? " +
-            " GROUP BY s.name, s.address, s.category " +
+            " GROUP BY s.name, s.address, s.category, s.latitude, s.longitude " +
             " ORDER BY s.name";
 
         Connection conn = null;
@@ -191,6 +197,8 @@ public class StoreDAO {
                 vo.setName(rs.getString("name"));
                 vo.setAddress(rs.getString("address"));
                 vo.setCategory(rs.getString("category"));
+                vo.setLatitude(rs.getDouble("latitude"));
+                vo.setLongitude(rs.getDouble("longitude"));
                 vo.setRating(rs.getDouble("rating")); // 평균
                 list.add(vo);
             }

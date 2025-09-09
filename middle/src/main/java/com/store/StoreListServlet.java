@@ -36,7 +36,9 @@ public class StoreListServlet extends HttpServlet {
                 .append("\"name\":\"").append(escape(s.getName())).append("\",")
                 .append("\"address\":\"").append(escape(s.getAddress())).append("\",")
                 .append("\"rating\":").append(s.getRating()).append(',')
-                .append("\"category\":\"").append(escape(s.getCategory())).append("\"")
+                .append("\"category\":\"").append(escape(s.getCategory())).append("\",")
+                .append("\"latitude\":").append(s.getLatitude()).append(',')
+                .append("\"longitude\":").append(s.getLongitude())
                 .append('}');
         }
         json.append("]}");
