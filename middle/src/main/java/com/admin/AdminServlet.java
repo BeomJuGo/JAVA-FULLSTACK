@@ -11,7 +11,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @WebServlet("/admin.do")
@@ -30,6 +36,40 @@ public class AdminServlet extends HttpServlet {
         if (!(obj instanceof MemberDTO)) return false;
         MemberDTO user = (MemberDTO) obj;
         return user.getUser_level() == 4; // 4 = 관리자
+    }
+
+    // 주소를 위도/경도로 변환 (Naver Geocoding API)
+    private double[] geocode(String address) {
+        HttpURLConnection conn = null;
+        BufferedReader br = null;
+        try {
+            String query = URLEncoder.encode(address, StandardCharsets.UTF_8);
+            URL url = new URL("https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=" + query);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            // 네이버 클라우드 플랫폼에서 발급받은 키로 교체 필요
+            conn.setRequestProperty("X-NCP-APIGW-API-KEY-ID", "YOUR_CLIENT_ID");
+            conn.setRequestProperty("X-NCP-APIGW-API-KEY", "YOUR_CLIENT_SECRET");
+
+            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) sb.append(line);
+            String json = sb.toString();
+
+            int idxX = json.indexOf("\"x\":\"");
+            int idxY = json.indexOf("\"y\":\"");
+            if (idxX == -1 || idxY == -1) return null;
+            String xs = json.substring(idxX + 5, json.indexOf('"', idxX + 5));
+            String ys = json.substring(idxY + 5, json.indexOf('"', idxY + 5));
+            return new double[]{Double.parseDouble(ys), Double.parseDouble(xs)}; // lat, lon
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try { if (br != null) br.close(); } catch (Exception ignore) {}
+            if (conn != null) conn.disconnect();
+        }
     }
 
     @Override
@@ -128,6 +168,11 @@ public class AdminServlet extends HttpServlet {
                 s.setName(name);
                 s.setAddress(address);
                 s.setCategory(category);
+                double[] coord = geocode(address);
+                if (coord != null) {
+                    s.setLatitude(coord[0]);
+                    s.setLongitude(coord[1]);
+                }
 
                 if (originalName != null && !originalName.isBlank()) {
                     storeDAO.updateInfo(originalName, s);
@@ -143,6 +188,11 @@ public class AdminServlet extends HttpServlet {
                 s.setAddress(address);
                 s.setCategory(category);
                 s.setRating(0.0); // 기본값
+                double[] coord = geocode(address);
+                if (coord != null) {
+                    s.setLatitude(coord[0]);
+                    s.setLongitude(coord[1]);
+                }
                 storeDAO.insertInfo(s);
             }
         } catch (Exception e) {
