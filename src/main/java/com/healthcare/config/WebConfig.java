@@ -1,21 +1,20 @@
 package com.healthcare.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.*;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000}")
+    private String allowedOrigins;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        String[] origins = allowedOrigins.split(",");
         registry.addMapping("/**")
-                // 필요하면 여기에 네가 쓰는 프론트 주소 추가/수정
-                .allowedOrigins(
-                        "http://localhost:3000",
-                        "http://127.0.0.1:3000",
-                        "http://localhost:5173",
-                        "http://127.0.0.1:5173"
-                )
+                .allowedOrigins(origins)
                 .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("*")
