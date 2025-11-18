@@ -1,0 +1,2 @@
+ALTER TABLE plan_item
+    MODIFY COLUMN item_type ENUM('DIET','WORKOUT','NOTE') NOT NULL;
