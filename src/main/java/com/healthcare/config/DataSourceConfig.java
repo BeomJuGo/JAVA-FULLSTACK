@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
-import java.net.URI;
 
 @Configuration
 @Profile("production")
@@ -29,42 +28,79 @@ public class DataSourceConfig {
         
         if (databaseUrl != null && !databaseUrl.isEmpty()) {
             try {
-                // postgresql:// 형식을 jdbc:postgresql:// 형식으로 변환
-                String jdbcUrl;
-                if (databaseUrl.startsWith("postgresql://")) {
-                    jdbcUrl = "jdbc:" + databaseUrl;
-                } else if (databaseUrl.startsWith("jdbc:postgresql://")) {
-                    jdbcUrl = databaseUrl;
-                } else {
-                    jdbcUrl = "jdbc:postgresql://" + databaseUrl;
+                // postgresql:// 형식을 올바르게 파싱
+                // 형식: postgresql://user:password@host:port/database 또는 postgresql://user:password@host/database
+                String urlWithoutScheme = databaseUrl;
+                if (urlWithoutScheme.startsWith("postgresql://")) {
+                    urlWithoutScheme = urlWithoutScheme.substring("postgresql://".length());
+                } else if (urlWithoutScheme.startsWith("jdbc:postgresql://")) {
+                    urlWithoutScheme = urlWithoutScheme.substring("jdbc:postgresql://".length());
                 }
                 
-                // URI 파싱하여 username, password 추출
-                URI uri = new URI(jdbcUrl.replace("jdbc:", ""));
-                String userInfo = uri.getUserInfo();
+                // @ 기호로 user:password와 host:port/database 분리
+                int atIndex = urlWithoutScheme.indexOf('@');
+                if (atIndex == -1) {
+                    throw new IllegalArgumentException("Invalid DATABASE_URL format: missing @");
+                }
                 
-                if (userInfo != null) {
-                    String[] userPass = userInfo.split(":");
-                    if (userPass.length >= 1) {
-                        config.setUsername(userPass[0]);
-                    }
-                    if (userPass.length >= 2) {
-                        // URL 인코딩된 비밀번호 처리
-                        String password = userPass[1];
-                        // URL 디코딩이 필요한 경우
+                String userPassword = urlWithoutScheme.substring(0, atIndex);
+                String hostDatabase = urlWithoutScheme.substring(atIndex + 1);
+                
+                // user:password 분리
+                String[] userPass = userPassword.split(":", 2);
+                String username = userPass[0];
+                String password = userPass.length > 1 ? userPass[1] : "";
+                
+                // URL 디코딩 (필요한 경우)
+                if (!password.isEmpty()) {
+                    try {
                         password = java.net.URLDecoder.decode(password, java.nio.charset.StandardCharsets.UTF_8);
-                        config.setPassword(password);
+                    } catch (Exception e) {
+                        // 디코딩 실패 시 원본 사용
                     }
                 }
+                
+                // host:port/database 분리
+                int slashIndex = hostDatabase.indexOf('/');
+                if (slashIndex == -1) {
+                    throw new IllegalArgumentException("Invalid DATABASE_URL format: missing database name");
+                }
+                
+                String hostPort = hostDatabase.substring(0, slashIndex);
+                String database = hostDatabase.substring(slashIndex + 1);
+                
+                // host:port 분리
+                String host;
+                int port = 5432; // PostgreSQL 기본 포트
+                int colonIndex = hostPort.indexOf(':');
+                if (colonIndex != -1) {
+                    host = hostPort.substring(0, colonIndex);
+                    try {
+                        port = Integer.parseInt(hostPort.substring(colonIndex + 1));
+                    } catch (NumberFormatException e) {
+                        // 포트 파싱 실패 시 기본값 사용
+                        System.err.println("Warning: Invalid port in DATABASE_URL, using default 5432");
+                    }
+                } else {
+                    host = hostPort;
+                }
+                
+                // 최종 JDBC URL 구성
+                String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, database);
                 
                 config.setJdbcUrl(jdbcUrl);
+                config.setUsername(username);
+                if (!password.isEmpty()) {
+                    config.setPassword(password);
+                }
                 config.setDriverClassName("org.postgresql.Driver");
                 
             } catch (Exception e) {
-                // 파싱 실패 시 기본값 사용
-                System.err.println("Failed to parse DATABASE_URL: " + e.getMessage());
+                // 파싱 실패 시 에러 출력
+                System.err.println("Failed to parse DATABASE_URL: " + databaseUrl);
+                System.err.println("Error: " + e.getMessage());
                 e.printStackTrace();
-                throw new RuntimeException("Failed to configure DataSource from DATABASE_URL", e);
+                throw new RuntimeException("Failed to configure DataSource from DATABASE_URL: " + e.getMessage(), e);
             }
         } else {
             // DATABASE_URL이 없으면 환경 변수에서 직접 가져오기
