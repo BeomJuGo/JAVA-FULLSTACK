@@ -34,6 +34,9 @@ dependencies {
 
     // MySQL Connector
     runtimeOnly 'com.mysql:mysql-connector-j:9.0.0'
+    
+    // PostgreSQL Connector (for Render deployment)
+    runtimeOnly 'org.postgresql:postgresql'
 
     // Swagger(OpenAPI)
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'

@@ -1,0 +1,14 @@
+.gradle
+build
+.idea
+.vscode
+*.iml
+*.log
+node_modules
+frontend
+.git
+.gitignore
+README.md
+DEPLOYMENT.md
+QUICK_START.md
+
