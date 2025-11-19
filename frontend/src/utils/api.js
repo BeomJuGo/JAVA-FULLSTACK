@@ -1,6 +1,17 @@
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
+const ensureApiPath = (url) => {
+  if (!url) return 'http://localhost:8080/api'
+  const trimmed = url.replace(/\/+$/, '')
+  if (trimmed.endsWith('/api')) {
+    return trimmed
+  }
+  return `${trimmed}/api`
+}
+
+const API_BASE = ensureApiPath(RAW_API_BASE)
 
 // Axios 인스턴스 생성
 const api = axios.create({
